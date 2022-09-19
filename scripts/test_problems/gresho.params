@@ -1,0 +1,51 @@
+% Example compile-time options:
+%  (HYDRO_MESHLESS_FINITE_MASS is optional, replace with your
+%   choice of hydro/mhd options)
+%
+%        HYDRO_MESHLESS_FINITE_MASS
+%        BOX_PERIODIC 
+%        BOX_SPATIAL_DIMENSION=2
+%        SELFGRAVITY_OFF  
+%        EOS_GAMMA=(1.4)
+%
+% You may want to experiment with the neighbor number and the AGGRESSIVE_SLOPE_LIMITERS or
+%  SLOPE_LIMITER_TOLERANCE and KERNEL_FUNCTION (try =5 or 7 instead of 3) settings, 
+%  to see how the numerical diffusivity is affected on this problem (you have significant 
+%  room to trade stability/noise versus diffusivity, and the problem in any code is, at this
+%  relatively low resolution, strongly influenced by the slope-limiter)
+%
+InitCondFile                       gresho_ics
+ICFormat                           3
+OutputDir                          output
+TimeLimitCPU                       50000
+MaxMemSize                         1600
+PartAllocFactor                    5
+BufferSize                         150
+TimeBegin                          0
+TimeMax                            3
+ComovingIntegrationOn              0
+BoxSize                            1
+OutputListOn                       0
+TimeOfFirstSnapshot                0
+TimeBetSnapshot                    0.5
+TreeDomainUpdateFrequency          0.005
+DesNumNgb                          20
+UnitLength_in_cm                   1
+UnitMass_in_g                      1
+UnitVelocity_in_cm_per_s           1
+UnitMagneticField_in_gauss         1
+SofteningGas                       0.05
+Softening_Type1                    0
+Softening_Type2                    0
+Softening_Type3                    0
+Softening_Type4                    0
+Softening_Type5                    0
+% -- optional numerical parameters (requires additional Config flags)
+ErrTolIntAccuracy                  0.001
+CourantFac                         0.025
+MaxRMSDisplacementFac              0.125
+MaxSizeTimestep                    5.0e-4
+ArtCondConstant                    0.25
+ViscosityAMin                      0.025
+ViscosityAMax                      2
+
