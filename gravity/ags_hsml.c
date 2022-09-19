@@ -1187,30 +1187,23 @@ void AGSForce_calc(void)
 
 #if defined(DM_SIDM_AREPO)
     int target = P[i].IndexMapToTempsidmStruc;
-    if(SIDMtempInfo[target].ngbcount > 350){printf("NGB# = %i\n",SIDMtempInfo[target].ngbcount);}
-    bool looking = true; //P[i].SIprob = 0.0;
-    //printf("Entered loop1\n");
+    //if(SIDMtempInfo[target].ngbcount > 350){printf("NGB# = %i\n",SIDMtempInfo[target].ngbcount);}
+    bool looking = true; SIDMtempInfo[target].SIprob = 0.0;
 #ifdef DM_NGB_SORT
     if(SIDMtempInfo[target].ngbcount < 350){
-        //printf("Entered loop2\n");
-    //int j;
-    //printf("SORT!!!\n");
+    int j;
     //struct ngb_list_data ngb_list_data_i[350];
-    /*struct ngb_list_data *ngb_list_data_i = malloc(350*sizeof(struct ngb_list_data));
+    struct ngb_list_data *ngb_list_data_i = malloc(350*sizeof(struct ngb_list_data));
     for(j=0;j<350;j++){
-    memcpy(&ngb_list_data_i[j].r, &P[i].ngbr[j], sizeof(ngb_list_data_i[0].r));
-    memcpy(&ngb_list_data_i[j].probs, &P[i].ngbprob[j], sizeof(ngb_list_data_i[0].probs));
-    memcpy(&ngb_list_data_i[j].IDs, &P[i].ngblist_sum[j], sizeof(ngb_list_data_i[0].IDs));
-    }*/
-
-    //memcpy(&ngb_list_data_i[j].r, &P[i].ngbr[j], sizeof(ngb_list_data_i.r));
-    //memcpy(&ngb_list_data_i[j].probs, &P[i].ngbprob[j], sizeof(ngb_list_data_i.probs));
-    //memcpy(&ngb_list_data_i[j].IDs, &P[i].ngblist_sum[j], sizeof(ngb_list_data_i.IDs));
+    memcpy(&ngb_list_data_i[j].r, &SIDMtempInfo[target].ngbr[j], sizeof(ngb_list_data_i[0].r));
+    memcpy(&ngb_list_data_i[j].probs, &SIDMtempInfo[target].ngbprob[j], sizeof(ngb_list_data_i[0].probs));
+    memcpy(&ngb_list_data_i[j].IDs, &SIDMtempInfo[target].ngblist_sum[j], sizeof(ngb_list_data_i[0].IDs));
+    }
     /*int n;
     if(n < 349 && (ngb_list_data_i[n].r < ngb_list_data_i[n+1].r)){
             printf("P[i].r = %f\n",P[i].ngbr[n]);
             printf("Rn = %f < Rn1 %f, n = %i, P[i].ID = %i\n",ngb_list_data_i[n].r,ngb_list_data_i[n+1].r,n, P[i].ID);
-        }/*
+        }*/
 
     /*int cmp(const void *a, const void *b)
     {
@@ -1226,35 +1219,44 @@ void AGSForce_calc(void)
 
     int cmp(const void *a, const void *b)
     {
-        struct SIDM_temp_particle_data *a1 = (struct SIDM_temp_particle_data *)a;
-        struct SIDM_temp_particle_data *a2 = (struct SIDM_temp_particle_data *)b;
-        if ((*a1).ngbr < (*a2).ngbr)
+        struct ngb_list_data *a1 = (struct ngb_list_data *)a;
+        struct ngb_list_data *a2 = (struct ngb_list_data *)b;
+        if ((*a1).r < (*a2).r)
         return -1;
-        else if ((*a1).ngbr > (*a2).ngbr)
+        else if ((*a1).r > (*a2).r)
         return 1;
         else
         return 0;
     }
 
-    qsort(&SIDMtempInfo[target], 350, sizeof(SIDMtempInfo[0]), cmp);  //Ndm_active
-    //qsort(ngb_list_data_i, 350, sizeof(ngb_list_data_i[0]), cmp);
+    //qsort(&SIDMtempInfo[target], 350, sizeof(SIDMtempInfo[0]), cmp);  //Ndm_active
+    qsort(ngb_list_data_i, 350, sizeof(ngb_list_data_i[0]), cmp);
       int n; //P[i].SIprob = 0.0;
-      for(n = 0; n < 350; n++){    //SIDMtempInfo[target].ngbcount
-        /*if(SIDMtempInfo[target].ngbr[n] > SIDMtempInfo[target].ngbr[n+1]){
-            printf("Rn = %f > Rn1 %f, n = %i\n",SIDMtempInfo[target].ngbr[n],SIDMtempInfo[target].ngbr[n+1],n);
-        }*/
+      for(n = 0; n < 349; n++){    //SIDMtempInfo[target].ngbcount
+        if(ngb_list_data_i[n].r > ngb_list_data_i[n+1].r){
+            printf("Rn = %f > Rn1 %f, n = %i , ID = %i,BAD!\n",ngb_list_data_i[n].r,ngb_list_data_i[n+1].r,n, P[i].ID);
+        }
         //printf("Rn = %f, prob = %f, IDn = %i, NGB# = %i\n",SIDMtempInfo[target].ngbr[n], SIDMtempInfo[target].ngbprob[n], SIDMtempInfo[target].ngblist_sum[n], SIDMtempInfo[target].ngbcount);
-        //}
-	  SIDMtempInfo[target].SIprob += SIDMtempInfo[target].ngbprob[n];
+        
+
+	  /*SIDMtempInfo[target].SIprob += SIDMtempInfo[target].ngbprob[n];
       
 	  if(looking == true){
 	    if(SIDMtempInfo[target].R < SIDMtempInfo[target].SIprob*2){
 	      SIDMtempInfo[target].SItarget = SIDMtempInfo[target].ngblist_sum[n];
 	      looking = false;
 	    }
-	  }                                                                                                           
+	  }
+      */    
+        SIDMtempInfo[target].SIprob += ngb_list_data_i[n].probs;
+	    if(looking == true){
+	    if(SIDMtempInfo[target].R < SIDMtempInfo[target].SIprob*2){
+	      SIDMtempInfo[target].SItarget = ngb_list_data_i[n].IDs;
+	      looking = false;
+	    }                                                                                                
+	  }                                                                                                       
       }
-      //free(ngb_list_data_i);
+      free(ngb_list_data_i);
       //printf("Done\n");
     }
 #endif
