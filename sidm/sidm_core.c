@@ -31,21 +31,26 @@
 
 #ifdef DM_SIDM
 
-
-double prob_of_interaction(double mass, double r, double h_si, double dV[3], double dt, double rholoc)
+double prob_of_interaction(double mass, double r, double h_si, double dV[3], double dt)
 {
     double dVmag = sqrt(dV[0]*dV[0]+dV[1]*dV[1]+dV[2]*dV[2]) / All.cf_atime; // velocity in physical
     double rho_eff = mass / (h_si*h_si*h_si) * All.cf_a3inv; // density in physical
-    //double rho_eff = rholoc;
-    
-    //    if(rholoc > 1.01e+8){
-    //    printf("sidm density is %.15f\n",rholoc);
     double cx_eff = All.DM_InteractionCrossSection * g_geo(r/h_si); // effective cross section (physical) scaled to cgs
     double units = UNIT_SURFDEN_IN_CGS; // needed to convert everything to cgs
-    if(All.DM_InteractionVelocityScale>0) {double x=dVmag/All.DM_InteractionVelocityScale; cx_eff/=1+x*x*x*x;} // take velocity dependence
+    if(All.DM_InteractionVelocityScale>0) {double x=dVmag/All.DM_InteractionVelocityScale; double x2 = x*x; cx_eff*=4*M_PI*(1/(1+x2)-log(1+x2)/(x2*(2+x2)));} // take velocity dependence
     return rho_eff * cx_eff * dVmag * dt * units; // dimensionless probability
 }
 
+double prob_of_interaction_robertson(double mass, double r, double h_si, double dV[3], double dt)
+{
+    double dVmag = sqrt(dV[0]*dV[0]+dV[1]*dV[1]+dV[2]*dV[2]) / All.cf_atime; // velocity in physical
+    double rho_eff = mass/(1.33*M_PI*h_si*h_si*h_si) * All.cf_a3inv; // density in physical
+    double cx_eff = All.DM_InteractionCrossSection; // effective cross section (physical) scaled to cgs
+    double units = UNIT_SURFDEN_IN_CGS; // needed to convert everything to cgs
+    if(All.DM_InteractionVelocityScale>0) {double x=dVmag/All.DM_InteractionVelocityScale; double x2 = x*x; cx_eff*=4*M_PI*(1/(1+x2)-log(1+x2)/(x2*(2+x2)));} // take velocity dependence
+    if((rho_eff * cx_eff * dVmag * dt * units) > 1.0){printf("P = %f\n",rho_eff * cx_eff * dVmag * dt * units);}
+    return rho_eff * cx_eff * dVmag * dt * units; // dimensionless probability
+}
 /*! This routine sets the kicks for each particle after it has been decided that they will
  *  interact. It uses an algorithm tha conserves energy and momentum but picks a random direction so it does not conserves angular momentum. */
 #if !defined(GRAIN_COLLISIONS) /* if using the 'grain collisions' module, these functions will be defined elsewhere [in the grains subroutines] */
@@ -100,47 +105,6 @@ double g_geo(double r)
     if(i >= GEOFACTOR_TABLE_LENGTH) {i = GEOFACTOR_TABLE_LENGTH - 1;}
     if(i <= 1) {f = 0.992318  + (GeoFactorTable[0] - 0.992318)*u;} else {f = GeoFactorTable[i - 1] + (GeoFactorTable[i] - GeoFactorTable[i - 1]) * (u - i);}
     return f;
-}
-
-/* This routine returns sigma(v_rel) form table */
-double sigma(double dVmag)
-{
-  double f, vi; int i;
-  vi = dVmag*SIGFACTOR_TABLE_LENGTH/500;
-  i = (int) vi;
-  if (vi > SIGFACTOR_TABLE_LENGTH)
-    {f = 0;}
-  else
-    {f = SigFactorTable[i-1] + (SigFactorTable[i] - SigFactorTable[i - 1]) * (vi - i);}
-  return f;
-}
-
-/* This routine integrates the differential cross-section for velocities ranging from 0 to 500 km/s */
-void init_sigma_table(void){
-  int i;
-  for(i = 0; i < SIGFACTOR_TABLE_LENGTH; i++)
-    {
-      double params[2];
-      params[0] = (double)i/SIGFACTOR_TABLE_LENGTH*500;
-      params[1] = All.DM_InteractionVelocityScale;
-      gsl_function F; gsl_integration_workspace *workspace; workspace = gsl_integration_workspace_alloc(GSLWORKSIZE);
-      double result, abserr;
-      F.function = &prob_angle_integ;
-      F.params = &params;
-      gsl_integration_qag(&F, 0.0, M_PI, 0, 1.0e-8, GSLWORKSIZE, GSL_INTEG_GAUSS41,workspace, &result, &abserr);
-      SigFactorTable[i] = result;
-      gsl_integration_workspace_free(workspace);
-    }
-}
-
-/*Define the differential cross-section below*/
-double prob_angle_integ (double x, void * params) {
-  double v = *(double *) params;
-  double w = *(double *) (params + sizeof(double));
-  double v2 = v*v;
-  double w2 = w*w;
-  double f = sin(x)/2/((1+v2/w2*sin(x/2)*sin(x/2))*(1+v2/w2*sin(x/2)*sin(x/2)));
-  return f;
 }
 
 /*! This routine initializes the table that will be used to get the geometrical factor

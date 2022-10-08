@@ -63,7 +63,9 @@ void init(void)
         endrun(0);
     }
 
-
+    #ifdef DM_SIDM
+    init_self_interactions();
+    #endif
     switch (All.ICFormat)
     {
         case 1:
@@ -166,12 +168,9 @@ void init(void)
     if(All.ComovingIntegrationOn)	/*  change to new velocity variable */
         {for(i=0;i<NumPart;i++) {for(j=0;j<3;j++) {P[i].Vel[j] *= sqrt(All.Time)*All.Time;}}}
 
-#ifdef DM_SIDM
+/*#ifdef DM_SIDM
     init_self_interactions();
-    //for(i = 0; i < NumPart; i++){
-    // if(P[i].Type == 1){
-    //P[i].rholoc = 0.0;}}
-#endif
+#endif*/
 
 
     for(i = 0; i < NumPart; i++)	/*  start-up initialization */

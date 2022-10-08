@@ -213,8 +213,20 @@ void empty_read_buffer(enum iofields blocknr, int offset, int pc, int type)
         case IO_ID:		/* particle ID */
             for(n = 0; n < pc; n++) {P[offset + n].ID = *ip++;}
             break;
-
-
+        case IO_NSI:
+#ifdef DM_SIDM
+        if(RestartFlag == 2)
+	    {
+            for(n = 0; n < pc; n++)
+            {
+                if(P[offset + n].Type == 1)
+                {
+                P[offset + n].NInteractions = *ip_int++;
+                }
+            }
+	    }
+	    break;
+#endif
         case IO_CHILD_ID:		// particle child ID //
             if(RestartFlag == 2)
             {
@@ -524,7 +536,6 @@ void empty_read_buffer(enum iofields blocknr, int offset, int pc, int type)
         case IO_COSMICRAY_KAPPA:
         case IO_AGS_RHO:
         case IO_RHOLOC:
-        case IO_NSI:
         case IO_AGS_QPT:
         case IO_AGS_PSI_RE:
         case IO_AGS_PSI_IM:
@@ -601,7 +612,7 @@ void empty_read_buffer(enum iofields blocknr, int offset, int pc, int type)
 
 
 
-/*! This function reads a snapshot file and distributes the data it contains
+/* This function reads a snapshot file and distributes the data it contains
  *  to tasks 'readTask' to 'lastTask'.
  */
 void read_file(char *fname, int readTask, int lastTask)
@@ -905,7 +916,7 @@ void read_file(char *fname, int readTask, int lastTask)
 #endif
 #ifdef DM_SIDM
 	    if(blocknr == IO_RHOLOC){continue;}
-	    if(blocknr == IO_NSI){continue;}
+	    if(RestartFlag == 0 && blocknr == IO_NSI){continue;}
 #endif
             if(ThisTask == readTask)
             {

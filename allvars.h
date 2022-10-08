@@ -2483,27 +2483,11 @@ extern ALIGN(32) struct particle_data
 
 #if defined(DM_SIDM)
     double dtime_sidm; /*!< timestep used if self-interaction probabilities greater than 0.2 are found */
-    long unsigned int NInteractions; /*!< Total number of ineractions */
-    double rholoc;
+    int NInteractions; /*!< Total number of ineractions */
+    double rholoc; /* Local DM density */
 #if defined(DM_SIDM_AREPO)
     int IndexMapToTempsidmStruc;
 #endif
-#if defined(DM_SIDM_AREPO2)
-    int ngbcount;
-    MyIDType SItarget;
-    double SIprob;
-    //double SIprob2;
-    double R;
-  MyIDType ngblist_sum[350];
-  double ngbprob[350];
-#ifdef DM_NGB_SORT
-  double ngbr[350];
-#endif
-#endif
-  //#endif
-  //int scatter;
-  //int do_sidm;
-  //long unsigned int numwrt;
 #endif
 
 #if defined(SUBFIND)

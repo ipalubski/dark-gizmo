@@ -296,19 +296,19 @@ void fill_write_buffer(enum iofields blocknr, int *startindex, int pc, int type)
             break;
 	    //Igor added bit
 #if defined(DM_SIDM)	    
-        case IO_RHOLOC:          
+	            case IO_RHOLOC:          
             for(n = 0; n < pc; pindex++)
                 if(P[pindex].Type == type)
                 {
                     *fp++ = (MyOutputFloat) P[pindex].rholoc;
                     n++;
                 }
-            break;
-        case IO_NSI:           /* particle mass */
-	   for(n = 0; n < pc; pindex++)
+		break;
+        case IO_NSI:           /* Number of Interactions */
+	        for(n = 0; n < pc; pindex++)
                 if(P[pindex].Type == type)
-	        {
-                    *fp++ = (MyOutputFloat) P[pindex].NInteractions;
+	            {
+                    *ip_int++ = (int) P[pindex].NInteractions;
                     n++;
                 }
             break;
@@ -1674,7 +1674,6 @@ int get_bytes_per_blockelement(enum iofields blocknr, int mode)
         case IO_AGE_PROTOSTAR:
         case IO_MASS:
         case IO_RHOLOC:
-	case IO_NSI:
         case IO_BH_DIST:
         case IO_U:
         case IO_RHO:
@@ -1760,7 +1759,9 @@ int get_bytes_per_blockelement(enum iofields blocknr, int mode)
             else
                 bytes_per_blockelement = sizeof(MyOutputFloat);
             break;
-
+        case IO_NSI:
+            bytes_per_blockelement = sizeof(int);
+            break;
 
         case IO_COSMICRAY_ENERGY:
         case IO_COSMICRAY_SLOPES:
@@ -1907,7 +1908,7 @@ int get_datatype_in_block(enum iofields blocknr)
             typekey = 0;		/* native int */
 #endif
             break;
-
+        case IO_NSI:
         case IO_BHPROGS:
         case IO_GRAINTYPE:
         case IO_EOSCOMP:
@@ -1949,7 +1950,7 @@ int get_values_per_blockelement(enum iofields blocknr)
         case IO_GENERATION_ID:
         case IO_MASS:
         case IO_RHOLOC:
-	case IO_NSI:
+	    case IO_NSI:
         case IO_BH_DIST:
         case IO_U:
         case IO_RHO:
@@ -2174,10 +2175,10 @@ long get_particles_in_block(enum iofields blocknr, int *typelist)
         case IO_CBE_MOMENTS:
             return nall;
             break;
-	case IO_NSI:
+	    case IO_NSI:
         case IO_RHOLOC:
             return header.npart[1];
-	    break;
+	        break;
         case IO_MASS:
             for(i = 0; i < 6; i++)
             {
@@ -2362,12 +2363,13 @@ int blockpresent(enum iofields blocknr)
         case IO_HSML:
             return 1;			/* always present */
             break;
-#if (defined(DM_SIDM))
-       case IO_RHOLOC:
-       case IO_NSI:
-	  return 1;
-	  break;
+        case IO_RHOLOC:
+        case IO_NSI:
+#if defined(DM_SIDM)
+	        return 1;
 #endif
+	        break;
+
         case IO_NE:
         case IO_NH:
 #if (defined(COOLING) || defined(RADTRANSFER)) && !defined(CHIMES)
@@ -3274,9 +3276,9 @@ void get_dataset_name(enum iofields blocknr, char *buf)
             strcpy(buf, "Masses");
             break;
         case IO_RHOLOC:
-	    strcpy(buf, "LocalDMDensity");
-	    break;
-	case IO_NSI:
+	        strcpy(buf, "LocalDMDensity");
+	        break;
+	    case IO_NSI:
             strcpy(buf, "NInteractions");
             break;
         case IO_U:

@@ -886,7 +886,8 @@ void apply_excision();
 #endif
 
 #ifdef DM_SIDM
-double prob_of_interaction(double mass, double r, double h_si, double dV[3], double dt, double rholoc);
+double prob_of_interaction(double mass, double r, double h_si, double dV[3], double dt);
+double prob_of_interaction_robertson(double mass, double r, double h_si, double dV[3], double dt);
 double g_geo(double r);
 void calculate_interact_kick(double dV[3], double kick[3], double m);
 void init_geofactor_table(void);

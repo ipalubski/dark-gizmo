@@ -137,9 +137,7 @@ static struct OUTPUT_STRUCT_NAME
   double R;
   MyIDType ngblistnode[350];
   double ngbprobnode[350];
-#ifdef DM_NGB_SORT
   double ngbrnode[350];
-#endif
 #endif
 #endif
 }
@@ -200,9 +198,7 @@ void ags_out2particle_density(struct OUTPUT_STRUCT_NAME *out, int i, int mode, i
         memset(&SIDMtempInfo[target].ngblist_sum,0,sizeof(SIDMtempInfo[target].ngblist_sum));
         memset(&SIDMtempInfo[target].SIprob,0.0,sizeof(double));
         SIDMtempInfo[target].R = gsl_rng_uniform(random_generator);
-    #ifdef DM_NGB_SORT
         memset(&SIDMtempInfo[target].ngbr,0.0,sizeof(SIDMtempInfo[target].ngbr));
-    #endif
     }
 
     //printf("NGB # = %i\n",out->ngbcount + SIDMtempInfo[target].ngbcount);
@@ -213,31 +209,11 @@ void ags_out2particle_density(struct OUTPUT_STRUCT_NAME *out, int i, int mode, i
     memcpy(SIDMtempInfo[target].ngbprob+SIDMtempInfo[target].ngbcount,out->ngbprobnode,out->ngbcount*sizeof(double));
     memcpy(SIDMtempInfo[target].ngbr+SIDMtempInfo[target].ngbcount,out->ngbrnode,out->ngbcount*sizeof(double));
     ASSIGN_ADD(SIDMtempInfo[target].ngbcount,out->ngbcount,mode);
-    //printf("NGBCOUNT = %i\n",SIDMtempInfo[0].ngbcount);
-
-    /*if(out->ngbcount > 0 && ((P[i].ngbcount + out->ngbcount) < 350)){
-    if(P[i].ngbcount + out->ngbcount > 350){printf("NGB # = %i (too many, should crash)\n", out->ngbcount);}
-    //if(target > Ndm_active){printf("target > Ndm_active\n");}
-    memcpy(P[i].ngblist_sum+P[i].ngbcount,out->ngblistnode,out->ngbcount*sizeof(MyIDType));
-    memcpy(P[i].ngbprob+P[i].ngbcount,out->ngbprobnode,out->ngbcount*sizeof(double));
-    memcpy(P[i].ngbr+P[i].ngbcount,out->ngbrnode,out->ngbcount*sizeof(double));
-    ASSIGN_ADD(P[i].ngbcount,out->ngbcount,mode);*/
-    
-    //bool looking = true;
-    /*int n;
-    for(n=0; n < out->ngbcount;n++){
-        P[i].ngblist_sum[n+P[i].ngbcount] = out->ngblistnode[n];
-        P[i].ngbprob[n+P[i].ngbcount] = out->ngbprobnode[n];
-#ifdef DM_NGB_SORT
-        P[i].ngbr[n+P[i].ngbcount] = out->ngbrnode[n];
-#endif
-    }
-    ASSIGN_ADD(P[i].ngbcount,out->ngbcount,mode);*/
-  }
-  }
+            }
         }
+  ASSIGN_ADD(P[i].rholoc,out->rholoc,mode);
+    }
 #endif
-ASSIGN_ADD(P[i].rholoc,out->rholoc,mode);
 #endif
 }
 
@@ -265,11 +241,6 @@ int ags_density_evaluate(int target, int mode, int *exportflag, int *exportnodec
     h2 = local.AGS_Hsml * local.AGS_Hsml;
     kernel_hinv(local.AGS_Hsml, &kernel.hinv, &kernel.hinv3, &kernel.hinv4);
     int AGS_kernel_shared_BITFLAG = ags_gravity_kernel_shared_BITFLAG(local.Type); // determine allowed particle types for search for adaptive gravitational softening terms
-    
-#if defined(DM_SIDM_RAND_TARGET_ORIG)
-    MyIDType ngblistsum[5000];
-    out.ngbcount = 0;
-#endif
 
     if(mode == 0)
       {
@@ -355,53 +326,29 @@ int ags_density_evaluate(int target, int mode, int *exportflag, int *exportnodec
                         out.NV_T[1][2] +=  kernel.wk * kernel.dp[1] * kernel.dp[2];
                         out.NV_T[2][2] +=  kernel.wk * kernel.dp[2] * kernel.dp[2];
 #endif
-#if defined(DM_SIDM)
-			//if(local.do_sidm){
+#if defined(DM_SIDM_AREPO)
 			if(numngb_inbox < 350){
 			double units = UNIT_SURFDEN_IN_CGS;
 			double dVmag = sqrt(kernel.dv[0]*kernel.dv[0]+kernel.dv[1]*kernel.dv[1]+kernel.dv[2]*kernel.dv[2]) / All.cf_atime;
 			int k;
 			for(k=0;k<3;k++){if(All.ComovingIntegrationOn) {kernel.dv[k] += All.cf_hubble_a * kernel.dp[k]/All.cf_a2inv;}}
-			//out.SIprob += kernel.wk * local.Mass * dVmag * All.DM_InteractionCrossSection * local.dtime * units / 2;
-			//double p_ij = kernel.wk * local.Mass * dVmag * All.DM_InteractionCrossSection * local.dtime * units / 2;
-			//out.SIprob += kernel.wk * local.Mass * dVmag * All.DM_InteractionCrossSection * local.dtime * units / 2;
 			if(All.DM_InteractionVelocityScale>0) {
 			  double r = dVmag*dVmag/(All.DM_InteractionVelocityScale*All.DM_InteractionVelocityScale);
 			  double sigma_v = 4*M_PI*(1/(1+r) - log(1+r)/(r*(2+r)));
-			  out.ngbprobnode[n+out.ngbcount] = kernel.wk * local.Mass * dVmag * sigma_v * All.DM_InteractionCrossSection * local.dtime * units / 2;}
+			  out.ngbprobnode[n] = kernel.wk * local.Mass * dVmag * sigma_v * All.DM_InteractionCrossSection * local.dtime * units / 2;}
 			else{
-			  out.ngbprobnode[n+out.ngbcount] = kernel.wk * local.Mass * dVmag * All.DM_InteractionCrossSection * local.dtime * units / 2;}
+			  out.ngbprobnode[n] = kernel.wk * local.Mass * dVmag * All.DM_InteractionCrossSection * local.dtime * units / 2;}
 			  out.rholoc += kernel.wk * local.Mass;
-			  out.ngblistnode[n+out.ngbcount] = P[j].ID;
-    #ifdef DM_NGB_SORT
-            out.ngbrnode[n+out.ngbcount] = kernel.r;
-    #endif
-            //ngblistsum[n] = j;
-            #ifdef DM_SIDM_RAND_TARGET_ORIG
-                //ngblistsum[n+out.ngbcount] = P[j].ID;
-                out.ngbprobnode[n+out.ngbcount] = kernel.wk * local.Mass * dVmag * All.DM_InteractionCrossSection * local.dtime * units / 2;
-                out.ngblistnode[n+out.ngbcount] = P[j].ID;
-            #endif
-			}
-			//}
+			  out.ngblistnode[n] = P[j].ID;
+              out.ngbrnode[n] = kernel.r;
+			            }
 #endif
-		    } //kernel.r > 0
-		}  // if(r2 < h2)
+		            } //kernel.r > 0
+		        }  // if(r2 < h2)
             } //for loop ngb
 #if defined(DM_SIDM)
-	    //if(local.do_sidm){
-#if defined(DM_SIDM_RAND_TARGET_ORIG)
-    memcpy(ngblistsum+out.ngbcount,ngblist,numngb_inbox*sizeof(MyIDType));
-#endif
 	    out.ngbcount += numngb_inbox;
-/*#if defined(DM_SIDM_RAND_TARGET_ORIG)
-    int targetdraw = rand() % (out.ngbcount + 1);
-    if(targetdraw > out.ngbcount){printf("targetdraw too big");}
-    out.SItarget = ngblistsum[targetdraw]; //out.ngblistnode[targetdraw];
-#endif*/                         
 #endif
-	    //}
-//#endif
         }
         
         if(mode == 1)
@@ -414,10 +361,7 @@ int ags_density_evaluate(int target, int mode, int *exportflag, int *exportnodec
 	      }
 	  }
       }
-/*#if defined(DM_SIDM_RAND_TARGET_ORIG)
-    int targetdraw = rand() % (out.ngbcount + 1);
-    out.SItarget = ngblistsum[targetdraw]; //out.ngblistnode[targetdraw];
-#endif*/
+
     if(mode == 0) {ags_out2particle_density(&out, target, 0, loop_iteration);} else {DATARESULT_NAME[target] = out;}
     return 0;
 }
@@ -920,14 +864,14 @@ struct INPUT_STRUCT_NAME
 #endif
 #endif
 #if defined(DM_SIDM)
-    int ngbcount;
+    //int ngbcount;
     double dtime_sidm;
     MyIDType ID;
+#ifdef DM_SIDM_AREPO
     MyIDType SItarget;
     double SIprob;
-  //bool scatter;
-  //MyIDType targetID;
     double R;
+#endif
 #ifdef GRAIN_COLLISIONS
     double Grain_CrossSection_PerUnitMass;
 #endif
@@ -967,23 +911,15 @@ static inline void INPUTFUNCTION_NAME(struct INPUT_STRUCT_NAME *in, int i, int l
 #endif
 #endif
 #if defined(DM_SIDM)
+    in->ID = P[i].ID;
+    in->dtime_sidm = P[i].dtime_sidm;
 #if defined(DM_SIDM_AREPO)
     int target = P[i].IndexMapToTempsidmStruc;
-    in->dtime_sidm = P[i].dtime_sidm;
     //in->ID = SIDMtempInfo[target].ID;
     in->R = SIDMtempInfo[target].R;
-    in->ngbcount = SIDMtempInfo[target].ngbcount;
+    //in->ngbcount = SIDMtempInfo[target].ngbcount;
     in->SItarget = SIDMtempInfo[target].SItarget;
     in->SIprob = SIDMtempInfo[target].SIprob;
-#endif
-#if defined(DM_SIDM_AREPO2)
-    //int target = P[i].IndexMapToTempsidmStruc;
-    in->dtime_sidm = P[i].dtime_sidm;
-    //in->ID = SIDMtempInfo[target].ID;
-    in->R = P[i].R;
-    in->ngbcount = P[i].ngbcount;
-    in->SItarget = P[i].SItarget;
-    in->SIprob = P[i].SIprob;
 #endif
 #ifdef GRAIN_COLLISIONS
     in->Grain_CrossSection_PerUnitMass = return_grain_cross_section_per_unit_mass(i);
@@ -991,7 +927,7 @@ static inline void INPUTFUNCTION_NAME(struct INPUT_STRUCT_NAME *in, int i, int l
 #endif
 }
 
-#ifdef DM_NGB_SORT
+#ifdef DM_SIDM_AREPO
 struct ngb_list_data{
   double r;
   MyIDType IDs;
@@ -1066,53 +1002,59 @@ int AGSForce_evaluate(int target, int mode, int *exportflag, int *exportnodecoun
   /* now set particle-i centric quantities so we don't do it inside the loop */
   kernel.h_i = local.AGS_Hsml; kernel_hinv(kernel.h_i, &kernel.hinv_i, &kernel.hinv3_i, &kernel.hinv4_i);
   int AGS_kernel_shared_BITFLAG = ags_gravity_kernel_shared_BITFLAG(local.Type); // determine allowed particle types for search for adaptive gravitational softening terms
-#if defined(DM_SIDM_AREPO)
+#if defined(DM_SIDM)
   out.dtime_sidm = local.dtime_sidm;
   
   if(mode == 0) {startnode = All.MaxPart; /* root node */} else {startnode = DATAGET_NAME[target].NodeList[0]; startnode = Nodes[startnode].u.d.nextnode;/* open it */}
-
+#if defined(DM_SIDM_AREPO)
     if(local.SIprob > 0.002) {out.dtime_sidm = DMIN(out.dtime_sidm , local.dtime*(0.002/local.SIprob));}
+#endif    
     while(startnode >= 0)
-      {
-	while(startnode >= 0)
-	  {
+    {
+	    while(startnode >= 0)
+	    {
 	    
-	    double search_len = local.AGS_Hsml;
-	    numngb_inbox = ngb_treefind_pairs_threads_targeted(local.Pos, search_len, target, &startnode, mode, exportflag, exportnodecount, exportindex, ngblist, AGS_kernel_shared_BITFLAG);
-	    if(numngb_inbox < 0) {return -2;}
-	    for(n = 0; n < numngb_inbox; n++)
-	      {
-		j = ngblist[n];
-		if(P[j].ID == local.SItarget){
-		  //if(local.targetID != P[j].ID){printf("WRONG PARTICLE!!!!!!!!\n");}
-		  //printf("P[j].ID = %i, target ID = %i, mode = %i\n",P[j].ID, local.SItarget, mode);
-		  for(k=0;k<3;k++)                                                               
-		    {                                                                           
-		      kernel.dv[k] = local.Vel[k] - P[j].Vel[k];                                      
-		      if(All.ComovingIntegrationOn) {kernel.dv[k] += All.cf_hubble_a * kernel.dp[k]/All.cf_a2inv;}}
-		  kernel.dp[0] = local.Pos[0] - P[j].Pos[0];
-		  kernel.dp[1] = local.Pos[1] - P[j].Pos[1];
-		  kernel.dp[2] = local.Pos[2] - P[j].Pos[2];
-          NEAREST_XYZ(kernel.dp[0],kernel.dp[1],kernel.dp[2],1);
-		  
-		  r2 = kernel.dp[0] * kernel.dp[0] + kernel.dp[1] * kernel.dp[1] + kernel.dp[2] * kernel.dp[2];
-		  kernel.r = sqrt(r2);
-		  if(kernel.r > local.AGS_Hsml){printf("r > h!!\n");}
-            //if(gsl_rng_uniform(random_generator) <= local.SIprob)                                                
-                //{
-		  
+	        double search_len = local.AGS_Hsml;
+#ifdef DM_SIDM_GIZMO
+            search_len *= 3.0; // need a 'buffer' because we will consider interactions with any kernel -overlap, not just inside one or the other kernel radius
+#endif
+            numngb_inbox = ngb_treefind_pairs_threads_targeted(local.Pos, search_len, target, &startnode, mode, exportflag, exportnodecount, exportindex, ngblist, AGS_kernel_shared_BITFLAG);
+            //printf("search_len =%f, h_i = %f\n",search_len,local.AGS_Hsml);
+            if(numngb_inbox < 0) {return -2;}
+            for(n = 0; n < numngb_inbox; n++)
+            {
+            j = ngblist[n];
+#if defined(DM_SIDM_AREPO)
+            if(P[j].ID != local.SItarget) continue;
+#endif
+            for(k=0;k<3;k++)                                                               
+                {                                                                           
+                    kernel.dv[k] = local.Vel[k] - P[j].Vel[k];                                      
+                    if(All.ComovingIntegrationOn) {kernel.dv[k] += All.cf_hubble_a * kernel.dp[k]/All.cf_a2inv;}
+                }
+                kernel.dp[0] = local.Pos[0] - P[j].Pos[0];
+                kernel.dp[1] = local.Pos[1] - P[j].Pos[1];
+                kernel.dp[2] = local.Pos[2] - P[j].Pos[2];
+                NEAREST_XYZ(kernel.dp[0],kernel.dp[1],kernel.dp[2],1);
+                
+                r2 = kernel.dp[0] * kernel.dp[0] + kernel.dp[1] * kernel.dp[1] + kernel.dp[2] * kernel.dp[2];
+                kernel.r = sqrt(r2);
+#if defined(DM_SIDM)
+                if(kernel.r > kernel.h_i+kernel.h_j) continue;
+#else
+                if(kernel.r > kernel.h_i && kernel.r > kernel.h_j) continue;
+#endif
+
 #ifdef DM_FUZZY
 #include "../sidm/dm_fuzzy_flux_computation.h"
 #endif
-#if defined(DM_SIDM_AREPO)
+#if defined(DM_SIDM)
 #include "../sidm/sidm_core_flux_computation.h"
 #endif
-                //}
-		}
+		//}
 		
-	      }
-	    
-	  }
+	      } // numngb_inbox loop
+	  } // while(startnode)
 	if(mode == 1) {listindex++; if(listindex < NODELISTLENGTH) {startnode = DATAGET_NAME[target].NodeList[listindex]; if(startnode >= 0) {startnode = Nodes[startnode].u.d.nextnode; /* open it */}}} /* continue to open leaves if needed */
       }
     
@@ -1128,94 +1070,18 @@ void AGSForce_calc(void)
   /* before doing any operations, need to zero the appropriate memory so we can correctly do pair-wise operations */
 #if defined(DM_SIDM)
   {int i,j; for(i = FirstActiveParticle; i >= 0; i = NextActiveParticle[i]) {P[i].dtime_sidm = 10.*GET_PARTICLE_TIMESTEP_IN_PHYSICAL(i);
-#if defined(DM_SIDM_RAND_TARGET_ORIG)
-    int n;
-    double SIprob3 = 0.0;
-    for(n = 0; n < 300; n++){                                                                                    
-	  SIprob3 += P[i].ngbprob[n];
-      }
-    //if(P[i].SIprob != P[i].SIprob2){
-    printf("SIprob = %f, SIprob2 = %f, SIprob3 = %f\n", P[i].SIprob, P[i].SIprob2, SIprob3);
-    //}
-    if(P[i].SItarget == P[i].ID){printf("TARGET IS STILL SELF!!!\n");}
-#endif
-
-#if defined(DM_SIDM_AREPO2)
-    bool looking = true;
-#ifdef DM_NGB_SORT
-    if(P[i].ngbcount < 350){
-    struct ngb_list_data *ngb_list_data_i = malloc(350*sizeof(struct ngb_list_data));
-    int j;
-    for(j=0;j<350;j++){
-    memcpy(&ngb_list_data_i[j].r, &P[i].ngbr[j], sizeof(ngb_list_data_i[0].r));
-    memcpy(&ngb_list_data_i[j].probs, &P[i].ngbprob[j], sizeof(ngb_list_data_i[0].probs));
-    memcpy(&ngb_list_data_i[j].IDs, &P[i].ngblist_sum[j], sizeof(ngb_list_data_i[0].IDs));
-    }
-
-    int cmp(const void *a, const void *b)
-    {
-        struct ngb_list_data *a1 = (struct ngb_list_data *)a;
-        struct ngb_list_data *a2 = (struct ngb_list_data *)b;
-        if ((*a1).r < (*a2).r)
-        return -1;
-        else if ((*a1).r > (*a2).r)
-        return 1;
-        else
-        return 0;
-    }
-
-    qsort(ngb_list_data_i, 350, sizeof(ngb_list_data_i[0]), cmp);
-
-    int n; //P[i].SIprob = 0.0;
-    for(n = 0; n < 350; n++){   
-        if(n < 349 && (P[i].ngbr[n] > P[i].ngbr[n+1])){
-            printf("Rn = %f > Rn1 %f, n = %i\n",P[i].ngbr[n],P[i].ngbr[n+1],n);
-        }
-
-	P[i].SIprob += P[i].ngbprob[n];
-	if(looking == true){
-	    if(P[i].R < P[i].SIprob*2){
-	      P[i].SItarget = P[i].ngblist_sum[n];
-	      looking = false;
-	    }                                                                                                
-	  }                                                                                                           
-      }
-    free(ngb_list_data_i);
-    }
-#endif
-#endif
-
+    //if(All.TimeStep == 0.){printf("NI = %i\n",P[i].NInteractions);}
 #if defined(DM_SIDM_AREPO)
     int target = P[i].IndexMapToTempsidmStruc;
-    //if(SIDMtempInfo[target].ngbcount > 350){printf("NGB# = %i\n",SIDMtempInfo[target].ngbcount);}
     bool looking = true; SIDMtempInfo[target].SIprob = 0.0;
-#ifdef DM_NGB_SORT
     if(SIDMtempInfo[target].ngbcount < 350){
     int j;
-    //struct ngb_list_data ngb_list_data_i[350];
     struct ngb_list_data *ngb_list_data_i = malloc(350*sizeof(struct ngb_list_data));
     for(j=0;j<350;j++){
     memcpy(&ngb_list_data_i[j].r, &SIDMtempInfo[target].ngbr[j], sizeof(ngb_list_data_i[0].r));
     memcpy(&ngb_list_data_i[j].probs, &SIDMtempInfo[target].ngbprob[j], sizeof(ngb_list_data_i[0].probs));
     memcpy(&ngb_list_data_i[j].IDs, &SIDMtempInfo[target].ngblist_sum[j], sizeof(ngb_list_data_i[0].IDs));
     }
-    /*int n;
-    if(n < 349 && (ngb_list_data_i[n].r < ngb_list_data_i[n+1].r)){
-            printf("P[i].r = %f\n",P[i].ngbr[n]);
-            printf("Rn = %f < Rn1 %f, n = %i, P[i].ID = %i\n",ngb_list_data_i[n].r,ngb_list_data_i[n+1].r,n, P[i].ID);
-        }*/
-
-    /*int cmp(const void *a, const void *b)
-    {
-        struct SIDM_temp_particle_data *a1 = (struct SIDM_temp_particle_data *)a;
-        struct SIDM_temp_particle_data *a2 = (struct SIDM_temp_particle_data *)b;
-        if ((*a1).ngbr < (*a2).ngbr)
-        return -1;
-        else if ((*a1).ngbr > (*a2).ngbr)
-        return 1;
-        else
-        return 0;
-    }*/
 
     int cmp(const void *a, const void *b)
     {
@@ -1229,25 +1095,13 @@ void AGSForce_calc(void)
         return 0;
     }
 
-    //qsort(&SIDMtempInfo[target], 350, sizeof(SIDMtempInfo[0]), cmp);  //Ndm_active
     qsort(ngb_list_data_i, 350, sizeof(ngb_list_data_i[0]), cmp);
-      int n; //P[i].SIprob = 0.0;
-      for(n = 0; n < 349; n++){    //SIDMtempInfo[target].ngbcount
+      int n;
+      for(n = 0; n < 349; n++){
         if(ngb_list_data_i[n].r > ngb_list_data_i[n+1].r){
             printf("Rn = %f > Rn1 %f, n = %i , ID = %i,BAD!\n",ngb_list_data_i[n].r,ngb_list_data_i[n+1].r,n, P[i].ID);
         }
-        //printf("Rn = %f, prob = %f, IDn = %i, NGB# = %i\n",SIDMtempInfo[target].ngbr[n], SIDMtempInfo[target].ngbprob[n], SIDMtempInfo[target].ngblist_sum[n], SIDMtempInfo[target].ngbcount);
-        
 
-	  /*SIDMtempInfo[target].SIprob += SIDMtempInfo[target].ngbprob[n];
-      
-	  if(looking == true){
-	    if(SIDMtempInfo[target].R < SIDMtempInfo[target].SIprob*2){
-	      SIDMtempInfo[target].SItarget = SIDMtempInfo[target].ngblist_sum[n];
-	      looking = false;
-	    }
-	  }
-      */    
         SIDMtempInfo[target].SIprob += ngb_list_data_i[n].probs;
 	    if(looking == true){
 	    if(SIDMtempInfo[target].R < SIDMtempInfo[target].SIprob*2){
@@ -1257,31 +1111,11 @@ void AGSForce_calc(void)
 	  }                                                                                                       
       }
       free(ngb_list_data_i);
-      //printf("Done\n");
     }
-#endif
-#ifdef DM_NGB_NOSORT
-      if(P[i].ngbcount < 350){//{P[i].scatter = false;}
-      //if(P[i].scatter){
-      int n; P[i].SIprob = 0.0;
-      for(n = 0; n < 350; n++){                                                                                    
-	  P[i].SIprob += P[i].ngbprob[n];
-	  if(looking == true){
-	    if(P[i].R < P[i].SIprob*2){
-	      P[i].SItarget = P[i].ngblist_sum[n];//out->ngblistnode[n];
-	      //if(P[i].SIprob > 1.0){printf("SCATTER, P = %f, target = %i, ID = %i\n",P[i].SIprob,P[i].SItarget,P[i].ID);}
-	      //P[i].targetID = P[P[i].ngblist_sum[n]].ID;
-	      looking = false;
-	    }                              
-	  }                                                                                                           
-      }
-      }
-#endif
 #endif
     }
   }
 #endif
-  //printf("DONE WITH LOOP!\n");
 #include "../system/code_block_xchange_perform_ops_malloc.h" /* this calls the large block of code which contains the memory allocations for the MPI/OPENMP/Pthreads parallelization block which must appear below */
 #include "../system/code_block_xchange_perform_ops.h" /* this calls the large block of code which actually contains all the loops, MPI/OPENMP/Pthreads parallelization */
 #include "../system/code_block_xchange_perform_ops_demalloc.h" /* this de-allocates the memory for the MPI/OPENMP/Pthreads parallelization block which must appear above */
@@ -1291,6 +1125,5 @@ void AGSForce_calc(void)
   CPU_Step[CPU_AGSDENSCOMPUTE] += timecomp; CPU_Step[CPU_AGSDENSWAIT] += timewait;
   CPU_Step[CPU_AGSDENSCOMM] += timecomm; CPU_Step[CPU_AGSDENSMISC] += timeall - (timecomp + timewait + timecomm);
 }
-//myfree(SIDMtempInfo);
 #include "../system/code_block_xchange_finalize.h" /* de-define the relevant variables and macros to avoid compilation errors and memory leaks */
 #endif // AGS_HSML_CALCULATION_IS_ACTIVE
