@@ -10,7 +10,7 @@
 #include "./galaxy_sf/blackholes/blackhole.h"
 #endif
 #ifdef DM_SIDM_AREPO
-#include "./gravity/sidm.h"
+#include "./sidm/sidm.h"
 #endif
 
 /* declarations of functions throughout the code */
@@ -898,6 +898,7 @@ double prob_angle_integ(double x, void * params);
 double sigma(double dVmag);
 void init_self_interactions();
 void log_self_interactions(double r);
+int cmp(const void *a, const void *b);
 #ifdef GRAIN_COLLISIONS
 double return_grain_cross_section_per_unit_mass(int i);
 double prob_of_grain_interaction(double cx_per_unitmass, double mass, double r, double h_si, double dV[3], double dt, int j_ngb);

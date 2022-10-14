@@ -6,13 +6,13 @@
 #include <mpi.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_integration.h>
-
 #include <unistd.h>
 #include <sys/types.h>
 
 #include "../allvars.h"
 #include "../proto.h"
 #include "../kernel.h"
+//#include "sidm.h"
 
 #define GSLWORKSIZE 100000
 
@@ -68,6 +68,7 @@ void calculate_interact_kick(double dV[3], double kick[3], double m)
 
 #ifdef DM_SIDM_AREPO
 // This function initializes a temporary structure to hold neighbor particle data for the SIDM routines
+
 void sidm_start(void)
 {
     int i, Ndm;
@@ -96,6 +97,18 @@ void sidm_end(void)
     myfree(SIDMtempInfo);
 }
 
+/*int cmp(const void *a, const void *b)
+    {
+        struct ngb_list_data *a1 = (struct ngb_list_data *)a;
+        struct ngb_list_data *a2 = (struct ngb_list_data *)b;
+        if ((*a1).r < (*a2).r)
+        return -1;
+        else if ((*a1).r > (*a2).r)
+        return 1;
+        else
+        return 0;
+    }
+*/
 #endif
 
 /*! This function returns the value of the geometrical factor needed for the calculation of the interaction probability. */

@@ -1300,7 +1300,7 @@ INCL    += 	allvars.h \
 			system/myqsort.h \
 			kernel.h \
 			eos/eos.h \
-			gravity/sidm.h \
+			sidm/sidm.h \
 			galaxy_sf/blackholes/blackhole.h \
 			structure/fof.h \
 			structure/subfind/subfind.h \

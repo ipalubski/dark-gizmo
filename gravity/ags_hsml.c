@@ -933,6 +933,19 @@ struct ngb_list_data{
   MyIDType IDs;
   double probs;
 };
+
+int cmp(const void *a, const void *b)
+    {
+        struct ngb_list_data *a1 = (struct ngb_list_data *)a;
+        struct ngb_list_data *a2 = (struct ngb_list_data *)b;
+        if ((*a1).r < (*a2).r)
+        return -1;
+        else if ((*a1).r > (*a2).r)
+        return 1;
+        else
+        return 0;
+    }
+
 #endif
 
 /* structure for variables which must be returned -from- the evaluation sub-routines */
@@ -1082,7 +1095,7 @@ void AGSForce_calc(void)
     memcpy(&ngb_list_data_i[j].probs, &SIDMtempInfo[target].ngbprob[j], sizeof(ngb_list_data_i[0].probs));
     memcpy(&ngb_list_data_i[j].IDs, &SIDMtempInfo[target].ngblist_sum[j], sizeof(ngb_list_data_i[0].IDs));
     }
-
+    /*
     int cmp(const void *a, const void *b)
     {
         struct ngb_list_data *a1 = (struct ngb_list_data *)a;
@@ -1093,7 +1106,7 @@ void AGSForce_calc(void)
         return 1;
         else
         return 0;
-    }
+    }*/
 
     qsort(ngb_list_data_i, 350, sizeof(ngb_list_data_i[0]), cmp);
       int n;
