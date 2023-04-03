@@ -1,0 +1,10 @@
+#define HYDRO_MESHLESS_FINITE_VOLUME 
+#define ADAPTIVE_GRAVSOFT_FORALL 2
+#define DM_SIDM 2
+#define NSI 
+#define DM_SIDM_AREPO 
+#define PMAXHIGH 
+#define HAVE_HDF5 
+#define OUTPUT_POTENTIAL 
+#define EVALPOTENTIAL 
+#define USE_FFTW3 

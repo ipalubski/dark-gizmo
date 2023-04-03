@@ -1,0 +1,21 @@
+#!/bin/bash                                                                                             
+#SBATCH --job-name=testRAND
+#SBATCH -A mkapling_lab        ## account to charge                                                               
+#SBATCH -p free          ## partition/queue name                                                           
+#SBATCH --nodes=4                                                                                                
+#SBATCH --ntasks-per-node 40           ## (-n) number of tasks to launch                                    
+#SBATCH --mem-per-cpu=4G                                                                                     
+#SBATCH --time=24:00:00          ## time limit for each array task                                                   
+#SBATCH --mail-type=end               ## send email when the job ends                                     
+#SBATCH --mail-user=ipalubsk@uci.edu  ## use this email address                                              
+#SBATCH --constraint="mlx5_ib"
+
+export OMP_NUM_THREADS=1                        
+export UCX_TLS=rc,mm
+export UCX_NET_DEVICES=mlx5_0:1
+source $HOME/.bashrc
+module purge
+module load gcc/11.2.0 gsl/2.7.1/gcc.11.2.0 hdf5/1.13.1/gcc.11.2.0-openmpi.4.1.2 openmpi/4.1.2/gcc.11.2.0 fftw/3.3.10/gcc.11.2.0-openmpi.4.1.2
+
+OUTDIR=holderout #Place Holder!                              
+mpirun -np $SLURM_NTASKS -mca pml ucx ./GIZMO ./test.params 0 1>/pub/ipalubsk/${OUTDIR}/gizmo.out 2>/pub/ipalubsk/${OUTDIR}/gizmo.err

@@ -1,0 +1,72 @@
+% Example compile-time options:
+%  (HYDRO_MESHLESS_FINITE_MASS is optional, replace with your
+%   choice of hydro/mhd options)
+%
+%        HYDRO_MESHLESS_FINITE_MASS
+%        BOX_PERIODIC
+%        BOX_SPATIAL_DIMENSION=2
+%        SELFGRAVITY_OFF
+%        EOS_GAMMA=(5.0/3.0)
+%        KERNEL_FUNCTION=5
+%
+% (The choice of KERNEL_FUNCTION is optional here. Experiment with different kernels.
+%   But be sure to set DesNumNgb accordingly; for e.g. KERNEL_FUNCTION=5 or 7, use 40-50, =3 or 4, use 20-32)
+%
+% the parameters above are required for the hydro version of this problem.  
+%   (modulo, of course, the choice of hydro method). For the MHD version of the 
+%   problem, additionally enable:
+%
+%        MAGNETIC
+%        MHD_B_SET_IN_PARAMS
+%
+% and then set the relevant BiniX, BiniY, BiniZ parameters below
+%
+% note that the default setup of this problem is inviscid, so the small-scale structure is always
+%   'seeded' by grid noise, and there is no "converged" solution in the non-linear structure (the structure
+%   should appear at infinitely small scales, at infinite resolution). Following
+%   Lecoanet et al. 2016 (MNRAS, 455, 4274), to actually obtain define-ably converged solutions,
+%   need to make the system have a finite Reynolds number. To do this, add finite viscosity. So experiment
+%   with the flags:
+%
+%        CONDUCTION
+%        VISCOSITY
+%
+% which are controlled by the flags 'ShearViscosityCoeff', 'BulkViscosityCoeff', 'ConductionCoeff' (see below)
+%
+InitCondFile                       kh_mcnally_2d_ics % or try 'kh_mcnally_2dgrid_ics'
+ICFormat                           3
+OutputDir                          output
+TimeLimitCPU                       50000
+MaxMemSize                         1600
+PartAllocFactor                    5
+BufferSize                         150
+TimeBegin                          0
+TimeMax                            10
+ComovingIntegrationOn              0
+BoxSize                            1
+OutputListOn                       0
+TimeOfFirstSnapshot                0
+TimeBetSnapshot                    0.1
+MaxSizeTimestep                    0.02
+TreeDomainUpdateFrequency          0.05
+DesNumNgb                          40
+UnitLength_in_cm                   1
+UnitMass_in_g                      1
+UnitVelocity_in_cm_per_s           1
+UnitMagneticField_in_gauss         1
+SofteningGas                       0.05
+Softening_Type1                    0
+Softening_Type2                    0
+Softening_Type3                    0
+Softening_Type4                    0
+Softening_Type5                    0
+% -- optional physics parameters
+BiniX                              0.07
+BiniY                              1.0e0
+BiniZ                              1.0e0
+ConductionCoeff                    0.0002
+ShearViscosityCoeff                0.0002
+BulkViscosityCoeff                 0.0
+% -- optional numerical parameters (requires additional Config flags)
+CourantFac                         0.1
+

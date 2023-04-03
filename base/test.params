@@ -1,0 +1,81 @@
+InitCondFile	/data/homezvol2/ipalubsk/p1e6_m1e9_vmax25_rc23-gadget.bin
+%InitCondFile	/scratch/gpfs/iz6511/s50c30P1e6h1out/snapshot_007
+OutputDir	 /scratch/gpfs/iz6511/s50c30P1e6h1out
+                                            
+ICFormat                    1   % format of IC file: 1=unformatted (gadget) binary, 3=hdf5, 4=cluster
+SnapFormat                  3   % format of snapshots: 1=unformatted (gadget) binary, 3=hdf5 [Default=3]
+
+RestartFile                 restart    % base name for restartfiles [Default='restart']
+SnapshotFileBase            snapshot   % base name for snapshot files [Default='snapshot']
+%OutputListOn                0   % =1 to use list in "OutputListFilename", =0 to specify
+%OutputListFilename          output_times.txt   % list of times (in code units) for snaps if OutputListOn=1
+NumFilesPerSnapshot         1   % number of sub-files to break each snapshot into [Default=1]
+NumFilesWrittenInParallel   1   % must be < N_processors & power of 2 [Default=1]
+
+OutputListOn		    0
+OutputListFilename	    timeout.txt
+TimeOfFirstSnapshot         0.0   % time (code units) of first snapshot
+TimeBetSnapshot             0.01
+TimeBetStatistics           0.05  % code time between additional statistics (e.g. energy) [Default=infinity]
+
+TimeLimitCPU                360000  % wall-clock timelimit for sim in seconds, before self-stop [Default=1 day]
+
+TimeBegin                   0.0    % Code-unit time at the beginning of the simulation
+TimeMax                     3.5
+
+MaxSizeTimestep             0.005   % maximum timestep in code units, set for your problem
+MinSizeTimestep             1.0e-12 % minimum timestep (code units). set this very low, or get the wrong answer [Default=0]
+
+UnitLength_in_cm            3.085678e21       % 1 kpc. This means a code unit is 1 pc/h [see User Guide for details]
+UnitMass_in_g               1.989e43          % This example code unit is 1e10 solar masses/h
+UnitVelocity_in_cm_per_s    1.0e5             % 1 km/sec
+UnitMagneticField_in_gauss  1.0               % 1 gauss
+GravityConstantInternal     0                 % Set the value of 'G' in code units, if desired. calculated by code if =0 [Default=0]
+
+ComovingIntegrationOn       0       % is the simulation a cosmological integration? (yes=1, no=0)
+BoxSize                     0       % box side-length in code units. irrelevant for open boxes. see user guide for custom box shapes.
+Omega0                      0       % Omega_Matter. Do not set, or set =0 for non-cosmological runs. [Default=0]
+OmegaLambda                 0       % Omega_Lambda. Do not set, or set =0 for non-cosmological runs. [Default=0]
+OmegaBaryon                 0       % Omega_Baryon. Do not set, or set =0 for non-cosmological runs. [Default=0]
+HubbleParam                 1       % Hubble Parameter little 'h'; Do not set, or set =1 for non-cosmological runs. [Default=1]
+
+MaxMemSize                 4000    % sets maximum memory cap per MPI task in MByte (to prevent segfaults/memory overreach)
+PartAllocFactor            2.5     % [orig set for 5.0] memory load allowed (ratio of element number to mean) for better cpu balance
+BufferSize                 300      % [orig set for 100.0] size of communications buffer per MPI sub-domain, in MByte
+
+TreeDomainUpdateFrequency  0.05    % 0.0005-0.05, dept on core+particle number
+
+InitGasTemp                0        % Initial temperature: set by IC file if =0 [Default=0]
+MinGasTemp                 0.       % Temperature floor. [Default=0]
+
+DesNumNgb                  32      % Cell-reconstruction kernel number: 32-60 standard in 3D, 60-114 for quintic
+MaxHsml                    1.0e10  % minimum gas kernel length (some very large value to prevent errors) [Default=infinity]
+MinGasHsmlFractional       0       % minimum kernel length relative to gas force softening (<= 1) [Default=0]
+
+AGS_DesNumNgb              32      % Neighbor number for calculating interaction kernel for non-gas neighbor maps.
+
+SIDMSmoothingFactor	 1
+%GRAVHfactor		   1
+
+Softening_Type0		   0.001      % element/particle type 0 [gas; this parameter can also be named 'SofteningGas']
+Softening_Type1	 0.001
+Softening_Type2     0.001      % element type 2 [e.g. dummy collisionless; alt. 'SofteningDisk']
+Softening_Type3     0.001      % element type 3 [e.g. grains/PIC particles; alt. 'SofteningBulge']
+Softening_Type4     0.001      % element type 4 [e.g. stars, in galaxy sims; alt. 'SofteningStars']
+Softening_Type5     0.001      % element type 5 [e.g. black holes/sinks; alt. 'SofteningBndry']
+%
+%--- If these are set in cosmological runs, SofteningX switches from comoving to physical
+%------- units when the comoving value exceeds the choice here
+%------- (these are ignored/do not need to be set, and *only* the above are used, for non-cosmo runs)
+%Softening_Type0_MaxPhysLimit    0.0005  % e.g. switch to 0.5pc physical below z=1 [alt. 'SofteningGasMaxPhys']
+%Softening_Type1_MaxPhysLimit    0.007   % [alt. 'SofteningHaloMaxPhys']
+%Softening_Type2_MaxPhysLimit    0.0075   % [alt. 'SofteningDiskMaxPhys']
+%Softening_Type3_MaxPhysLimit    0.00250   % [alt. 'SofteningBulgeMaxPhys']
+%Softening_Type4_MaxPhysLimit    0.0005  % [alt. 'SofteningStarsMaxPhys']
+%Softening_Type5_MaxPhysLimit    0.0005  % [alt. 'SofteningBndryMaxPhys']
+
+
+DM_InteractionCrossSection	 50
+DM_InteractionVelocityScale   0     % velocity [code units]: if>0, cross-section scales ~1/(1+(v/v0)^4) above this "v0"
+DM_DissipationFactor          0     % 0=elastic, 1=pure dissipative (fractional dissipation of kinetic energy in event)
+DM_KickPerCollision           0     % velocity 'kick' [code units] per collision (this^2=specific energy/mass released)

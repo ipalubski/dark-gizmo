@@ -1,0 +1,50 @@
+% Example compile-time options:
+%  (HYDRO_MESHLESS_FINITE_MASS is optional, replace with your
+%   choice of hydro/mhd options)
+%
+%        HYDRO_MESHLESS_FINITE_MASS
+%        BOX_SPATIAL_DIMENSION=2
+%        SELFGRAVITY_OFF 
+%        GRAVITY_ANALYTIC
+%        EOS_GAMMA=(7.0/5.0)
+%        ENERGY_ENTROPY_SWITCH_IS_ACTIVE
+%
+% Make sure you go into the file gravity/analytic_gravity.h and un-comment the line:
+%
+%  //GravAccel_KeplerianTestProblem(); // keplerian disk with boundaries for test problem
+%
+% within the routine “add_analytic_gravitational_forces”. Otherwise the code won’t know 
+% what to use for the analytic gravitational forces.
+%
+%
+InitCondFile                       keplerian_ics
+ICFormat                           3
+OutputDir                          output
+TimeLimitCPU                       50000
+MaxMemSize                         1600
+PartAllocFactor                    5
+BufferSize                         150
+TimeBegin                          0
+TimeMax                            10
+ComovingIntegrationOn              0
+BoxSize                            8
+OutputListOn                       0
+TimeOfFirstSnapshot                0
+TimeBetSnapshot                    2.5
+MaxSizeTimestep                    0.1
+TreeDomainUpdateFrequency          0.005
+DesNumNgb                          20
+UnitLength_in_cm                   1
+UnitMass_in_g                      1
+UnitVelocity_in_cm_per_s           1
+GravityConstantInternal            1
+SofteningGas                       0.05
+Softening_Type1                    0
+Softening_Type2                    0
+Softening_Type3                    0
+Softening_Type4                    0
+Softening_Type5                    0
+% -- optional numerical parameters (requires additional Config flags)
+ErrTolIntAccuracy                  0.002
+CourantFac                         0.025
+MaxRMSDisplacementFac              0.125
