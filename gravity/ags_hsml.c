@@ -154,42 +154,10 @@ void ags_out2particle_density(struct OUTPUT_STRUCT_NAME *out, int i, int mode, i
 #if defined(AGS_FACE_CALCULATION_IS_ACTIVE)
   {int j,k; for(k = 0; k < 3; k++) {for(j = 0; j < 3; j++) {ASSIGN_ADD(P[i].NV_T[k][j], out->NV_T[k][j], mode);}}}
 #endif
-#if defined(DM_SIDM)
-#if defined(DM_SIDM_RAND_TARGET_ORIG)
-    {
-    ASSIGN_ADD(P[i].SIprob,out->SIprob,mode);
-    int targetdraw = rand() % (out->ngbcount + 1);
-    if(mode == 0){
-    P[i].SItarget = out->ngblistnode[targetdraw];
-    }
-    int n;
-    for(n = 0; n < out->ngbcount; n++){
-      if(mode == 0 && n == 0){
-	P[i].SIprob2 = out->ngbprobnode[n];}
-      else{
-	P[i].SIprob2 += out->ngbprobnode[n];}
-    }
-    if(mode == 0 ){
-    memset(P[i].ngbprob,0.0,sizeof(P[i].ngbprob));
-    }
-    memcpy(P[i].ngbprob+P[i].ngbcount,out->ngbprobnode,out->ngbcount*sizeof(double));
-    }
-#endif 
+#if defined(DM_SIDM) 
 #if defined(DM_SIDM_AREPO)
     {
         if(All.TimeStep != 0.){
-/*if(mode == 0){
-    P[i].ngbcount = 0;
-    memset(&P[i].ngbprob,0.0,sizeof(P[i].ngbprob));
-    memset(&P[i].ngblist_sum,0,sizeof(P[i].ngblist_sum));
-#ifdef DM_NGB_SORT
-    memset(&P[i].ngbr,0.0,sizeof(P[i].ngbr));
-#endif
-    P[i].SIprob = 0.0;
-    P[i].R = gsl_rng_uniform(random_generator);
-    P[i].SItarget = -1;
-  }*/
-    //printf("STARTING WRITING\n");
     
     int target = P[i].IndexMapToTempsidmStruc;
     
@@ -201,7 +169,6 @@ void ags_out2particle_density(struct OUTPUT_STRUCT_NAME *out, int i, int mode, i
         memset(&SIDMtempInfo[target].ngbr,0.0,sizeof(SIDMtempInfo[target].ngbr));
     }
 
-    //printf("NGB # = %i\n",out->ngbcount + SIDMtempInfo[target].ngbcount);
     if(out->ngbcount > 0 && ((SIDMtempInfo[target].ngbcount + out->ngbcount) < 100)){
     if(SIDMtempInfo[target].ngbcount + out->ngbcount > 100){printf("NGB # = %i (too many, should crash)\n", out->ngbcount);}
     if(target > Ndm_active){printf("target > Ndm_active\n");}
@@ -211,7 +178,6 @@ void ags_out2particle_density(struct OUTPUT_STRUCT_NAME *out, int i, int mode, i
     ASSIGN_ADD(SIDMtempInfo[target].ngbcount,out->ngbcount,mode);
             }
         }
-	//ASSIGN_ADD(P[i].rholoc,out->rholoc,mode);
     }
 #endif
     ASSIGN_ADD(P[i].rholoc,out->rholoc,mode);
@@ -334,9 +300,18 @@ int ags_density_evaluate(int target, int mode, int *exportflag, int *exportnodec
 			int k;
 			for(k=0;k<3;k++){if(All.ComovingIntegrationOn) {kernel.dv[k] += All.cf_hubble_a * kernel.dp[k]/All.cf_a2inv;}}
 			if(All.DM_InteractionVelocityScale>0) {
+                #ifdef DM_SIDM_RES
 			  double r = dVmag*dVmag/(All.DM_InteractionVelocityScale*All.DM_InteractionVelocityScale);
-			  double sigma_v = 4*M_PI*(1/(1+r) - log(1+r)/(r*(2+r)));
-			  out.ngbprobnode[n] = kernel.wk * local.Mass * dVmag * sigma_v * All.DM_InteractionCrossSection * local.dtime * units / 2;}
+			  //double DMmass = sqrt(8)/(All.DM_InteractionVelocityScale*sqrt(All.DM_a*All.DM_re));
+			  double sigma_v = 1/(pow((1-r),2)+All.DM_g*r);
+			  out.ngbprobnode[n] = All.DM_InteractionCrossSection * kernel.wk * local.Mass * dVmag * sigma_v * local.dtime * units / 2;
+                #else
+			        double r = dVmag*dVmag/(All.DM_InteractionVelocityScale*All.DM_InteractionVelocityScale);
+			        //double sigma_v = 4*M_PI*(1/(1+r) - log(1+r)/(r*(2+r)));
+				double sigma_v = 1/(1+r);
+				out.ngbprobnode[n] = kernel.wk * local.Mass * dVmag * sigma_v * All.DM_InteractionCrossSection * local.dtime * units / 2;
+                #endif
+			}
 			else{
 			  out.ngbprobnode[n] = kernel.wk * local.Mass * dVmag * All.DM_InteractionCrossSection * local.dtime * units / 2;}
 			//out.rholoc += kernel.wk * local.Mass;
@@ -1113,27 +1088,11 @@ void AGSForce_calc(void)
         return 0;
     }
     int n;
-    /*for(n = 0; n < 349; n++){
-        if(P[i].ID == 1172983808){
-            printf("BEF SRT (SIDMtemp) %f | %f | %f | %f (NGBtemp) | %i \n",SIDMtempInfo[target].ngbr[n], SIDMtempInfo[target].ngbprob[n], ngb_list_data_i[n].r, ngb_list_data_i[n].probs, n);
-        }}*/
     qsort(ngb_list_data_i, 100, sizeof(ngb_list_data_i[0]), cmp);
     //qsort(&SIDMtempInfo[target], 350, sizeof(SIDMtempInfo[0]), cmp2);
 
       
       for(n = 0; n < 99; n++){
-      /*  if(P[i].ID == 1172983808){
-            printf("AFT SRT (SIDMtemp) %f | %f | %f | %f (NGBtemp) | %i \n",SIDMtempInfo[target].ngbr[n], SIDMtempInfo[target].ngbprob[n], ngb_list_data_i[n].r, ngb_list_data_i[n].probs, n);
-        if(ngb_list_data_i[n].r > ngb_list_data_i[n+1].r){
-            printf("Rn = %f > Rn1 %f, n = %i , ID = %i, (NGBtemp) BAD!\n",ngb_list_data_i[n].r,ngb_list_data_i[n+1].r,n, P[i].ID);
-        }
-        if(SIDMtempInfo[target].ngbr[n] > SIDMtempInfo[target].ngbr[n+1]){  
-            printf("Rn = %f > Rn1 %f, n = %i , ID = %i, (SIDMtemp) BAD!\n",SIDMtempInfo[target].ngbr[n],SIDMtempInfo[target].ngbr[n+1],n, P[i].ID); 
-        }
-        if(SIDMtempInfo[target].ngbr[n] != ngb_list_data_i[n].r){
-            printf("(SIDMtemp) %f != %f (ngb_temp), %i, %i\n", SIDMtempInfo[target].ngbr[n], ngb_list_data_i[n].r,n,P[i].ID);
-        }
-        }*/
         SIDMtempInfo[target].SIprob += ngb_list_data_i[n].probs;//SIDMtempInfo[target].ngbprob[n];
         if(looking == true){
 	  if(SIDMtempInfo[target].R < SIDMtempInfo[target].SIprob*2){

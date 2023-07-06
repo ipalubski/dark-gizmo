@@ -59,16 +59,16 @@ void calculate_interact_kick(double dV[3], double kick[3], double m)
     double dVmag = (1-All.DM_DissipationFactor)*sqrt(dV[0]*dV[0]+dV[1]*dV[1]+dV[2]*dV[2]);
     if(dVmag<0) {dVmag=0;}
     if(All.DM_KickPerCollision>0) {double v0=All.DM_KickPerCollision; dVmag=sqrt(dVmag*dVmag+v0*v0);}
-    //#if defined(SIDM_ISOTROPIC)
+    #if defined(SIDM_ISOTROPIC)
     double cos_theta = 2.0*gsl_rng_uniform(random_generator)-1.0, sin_theta = sqrt(1.-cos_theta*cos_theta), phi = gsl_rng_uniform(random_generator)*2.0*M_PI;
-    //#endif
-    /*#ifdef SIDM_ANISOTROPIC
+    #endif
+    #ifdef SIDM_ANISOTROPIC
     double R = gsl_rng_uniform(random_generator);
-    double vw2 = All.DM_InteractionVelocityScale*All.DM_InteractionVelocityScale/dVmag/dVmag, cos_theta = (R*(1.0+2.0*vw2)-1.0-vw2)/(R-1.0-vw2);
+    double vw2 = dVmag*dVmag/All.DM_InteractionVelocityScale/All.DM_InteractionVelocityScale, cos_theta = (1.0+vw2-R*(vw2+2))/(1.0+vw2-R*vw2);//cos_theta = (R*(1.0+2.0*vw2)-1.0-vw2)/(R-1.0-vw2);
     double sin_theta = sqrt(1.-cos_theta*cos_theta), phi = acos(cos_theta);
     //printf("phi = %f, vw2 = %f, R = %f, cos_theta = %f \n", phi,vw2,R,cos_theta);
     //printf("num = %f, den = %f \n",R*(1+2*vw2)-1.0-vw2,R-1.0-vw2);
-    #endif*/
+    #endif
     kick[0] = 0.5*(dV[0] + dVmag*sin_theta*cos(phi));
     kick[1] = 0.5*(dV[1] + dVmag*sin_theta*sin(phi));
     kick[2] = 0.5*(dV[2] + dVmag*cos_theta);
