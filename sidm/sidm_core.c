@@ -64,7 +64,8 @@ void calculate_interact_kick(double dV[3], double kick[3], double m)
     #endif
     #ifdef SIDM_ANISOTROPIC
     double R = gsl_rng_uniform(random_generator);
-    double vw2 = dVmag*dVmag/All.DM_InteractionVelocityScale/All.DM_InteractionVelocityScale, cos_theta = (1.0+vw2-R*(vw2+2))/(1.0+vw2-R*vw2);//cos_theta = (R*(1.0+2.0*vw2)-1.0-vw2)/(R-1.0-vw2);
+    double vw2 = All.DM_InteractionVelocityScale*All.DM_InteractionVelocityScale/dVmag/dVmag, cos_theta = (R*(1.0+2.0*vw2)-1.0-vw2)/(R-1.0-vw2);
+    //double vw2 = dVmag*dVmag/All.DM_InteractionVelocityScale/All.DM_InteractionVelocityScale, cos_theta = (1.0+vw2-R*(vw2+2))/(1.0+vw2-R*vw2);//cos_theta = (R*(1.0+2.0*vw2)-1.0-vw2)/(R-1.0-vw2);
     double sin_theta = sqrt(1.-cos_theta*cos_theta), phi = acos(cos_theta);
     //printf("phi = %f, vw2 = %f, R = %f, cos_theta = %f \n", phi,vw2,R,cos_theta);
     //printf("num = %f, den = %f \n",R*(1+2*vw2)-1.0-vw2,R-1.0-vw2);

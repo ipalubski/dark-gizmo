@@ -305,6 +305,10 @@ int ags_density_evaluate(int target, int mode, int *exportflag, int *exportnodec
 			  //double DMmass = sqrt(8)/(All.DM_InteractionVelocityScale*sqrt(All.DM_a*All.DM_re));
 			  double sigma_v = 1/(pow((1-r),2)+All.DM_g*r);
 			  out.ngbprobnode[n] = All.DM_InteractionCrossSection * kernel.wk * local.Mass * dVmag * sigma_v * local.dtime * units / 2;
+		#elif DM_SIDM_VIS
+			  double r = dVmag*dVmag/(All.DM_InteractionVelocityScale*All.DM_InteractionVelocityScale);
+			  double sigma_v = 8*pow(r,-3)*((2+r)*log(1+r)-2*r);
+			  out.ngbprobnode[n] = All.DM_InteractionCrossSection * kernel.wk * local.Mass * dVmag * sigma_v * local.dtime * units / 2;
                 #else
 			        double r = dVmag*dVmag/(All.DM_InteractionVelocityScale*All.DM_InteractionVelocityScale);
 			        //double sigma_v = 4*M_PI*(1/(1+r) - log(1+r)/(r*(2+r)));

@@ -1,4 +1,4 @@
-InitCondFile	/data/homezvol2/ipalubsk/p1e6_m1e9_vmax25_rc23-gadget.bin
+InitCondFile	/data/homezvol2/ipalubsk/p3e4_m1e9_vmax24_rc23-gadget.bin
 %InitCondFile	/scratch/gpfs/iz6511/s50c30P1e6h1out/snapshot_007
 OutputDir	 /scratch/gpfs/iz6511/s50c30P1e6h1out
                                             
@@ -15,13 +15,13 @@ NumFilesWrittenInParallel   1   % must be < N_processors & power of 2 [Default=1
 OutputListOn		    0
 OutputListFilename	    timeout.txt
 TimeOfFirstSnapshot         0.0   % time (code units) of first snapshot
-TimeBetSnapshot             0.01
+TimeBetSnapshot             0.035
 TimeBetStatistics           0.05  % code time between additional statistics (e.g. energy) [Default=infinity]
 
 TimeLimitCPU                360000  % wall-clock timelimit for sim in seconds, before self-stop [Default=1 day]
 
 TimeBegin                   0.0    % Code-unit time at the beginning of the simulation
-TimeMax                     3.5
+TimeMax                     16.0
 
 MaxSizeTimestep             0.005   % maximum timestep in code units, set for your problem
 MinSizeTimestep             1.0e-12 % minimum timestep (code units). set this very low, or get the wrong answer [Default=0]
@@ -74,8 +74,9 @@ Softening_Type5     0.001      % element type 5 [e.g. black holes/sinks; alt. 'S
 %Softening_Type4_MaxPhysLimit    0.0005  % [alt. 'SofteningStarsMaxPhys']
 %Softening_Type5_MaxPhysLimit    0.0005  % [alt. 'SofteningBndryMaxPhys']
 
-
-DM_InteractionCrossSection	 50
+DM_a				 0
+DM_re				 0
+DM_InteractionCrossSection	 0
 DM_InteractionVelocityScale   0     % velocity [code units]: if>0, cross-section scales ~1/(1+(v/v0)^4) above this "v0"
 DM_DissipationFactor          0     % 0=elastic, 1=pure dissipative (fractional dissipation of kinetic energy in event)
 DM_KickPerCollision           0     % velocity 'kick' [code units] per collision (this^2=specific energy/mass released)

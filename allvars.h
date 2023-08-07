@@ -1737,7 +1737,11 @@ extern struct global_data_all_processes
 #ifdef PMAXLOW
   MyDouble Ptarget;
 #endif
-  MyDouble DM_InteractionCrossSection;  /*!< self-interaction cross-section in [cm^2/g]*/
+#ifdef DM_SIDM_RES
+    MyDouble DM_g; /*scattering length*/
+  //MyDouble DM_re; /*effective range*/
+#endif
+    MyDouble DM_InteractionCrossSection;  /*!< self-interaction cross-section in [cm^2/g]*/
     MyDouble DM_DissipationFactor;  /*!< dimensionless parameter governing efficiency of dissipation (1=dissipative, 0=elastic) */
     MyDouble DM_KickPerCollision;  /*!< for exo-thermic DM reactions, this determines the energy gain 'per event': kick in code units (equivalent to specific energy) associated 'per event' */
     MyDouble DM_InteractionVelocityScale; /*!< scale above which the scattering becomes velocity-dependent */

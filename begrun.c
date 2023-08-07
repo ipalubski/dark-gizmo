@@ -1141,6 +1141,15 @@ void read_parameter_file(char *fname)
         addr[nt] = &All.DM_InteractionVelocityScale;
         id[nt++] = REAL;
 #endif
+#ifdef DM_SIDM_RES
+        strcpy(tag[nt], "DM_g");
+        addr[nt] = &All.DM_g;
+        id[nt++] = REAL;
+
+        //strcpy(tag[nt], "DM_re");
+        //addr[nt] = &All.DM_re;
+        //id[nt++] = REAL;
+#endif
 #endif
 
 

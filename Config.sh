@@ -1,5 +1,4 @@
 #!/bin/bash            # this line only there to enable syntax highlighting in this file
-
 ####################################################################################################
 #  Enable/Disable compile-time options as needed: this is where you determine how the code will act
 #  From the list below, please activate/deactivate the
@@ -26,11 +25,11 @@ ADAPTIVE_GRAVSOFT_FORALL=2
 #MULTIPLEDOMAINS=2
 DM_SIDM=2
 #DM_NGB_SORT
-#DM_SIDM_MC_TARGET
-#SIDM_ISOTROPIC
+SIDM_ISOTROPIC
 NSI
+DM_SIDM_RES
 DM_SIDM_AREPO
-PMAXHIGH
+PMAXLOW
 HAVE_HDF5
 ##FORCE_EQUAL_TIMESTEPS
 ##OUTPUT_TIMESTEP
@@ -171,7 +170,7 @@ EVALPOTENTIAL
 ## ----------------------------------------------------------------------------------------------------
 # -------------------------------------- Self-Interacting DM (Rocha et al. 2012) and Scalar-field DM and Fuzzy DM
 # -------------------------------    use of these routines (if not in the public GIZMO code) requires explicit pre-approval by developers J. Bullock or M. Boylan-Kolchin (acting for M. Rocha); approved users please cite Rocha et al., MNRAS 2013, 430, 81 and Robles et al, 2017 (arXiv:1706.07514)
-#DM_SIDM=2                      # self-interacting particle types (specify the particle types which are self-interacting DM with a bit mask, as for PM_PLACEHIGHRESREGION above (see description); previous "DMDISK_INTERACTIONS" is identical to setting DM_SIDM=2+4  [cite Rocha et al., MNRAS 2013, 430, 81 and Robles et al, 2017 (arXiv:1706.07514)]
+#DM_SIDM_ROBERTSON=2                      # self-interacting particle types (specify the particle types which are self-interacting DM with a bit mask, as for PM_PLACEHIGHRESREGION above (see description); previous "DMDISK_INTERACTIONS" is identical to setting DM_SIDM=2+4  [cite Rocha et al., MNRAS 2013, 430, 81 and Robles et al, 2017 (arXiv:1706.07514)]
 #DM_SCALARFIELD_SCREENING       # gravity is mediated by a long-range scalar field, with dynamical screening (primarily alternative DE models) [cite Rocha et al., MNRAS 2013, 430, 81 and Robles et al, 2017 (arXiv:1706.07514)]
 ## -----------------------------------------------------------------------------------------------------
 # --------------------------------------- Pure-Tree Options for Direct N-body of small-N groups (recommended for hard binaries, etc)

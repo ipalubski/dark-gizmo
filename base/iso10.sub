@@ -1,11 +1,11 @@
 #!/bin/bash                                                                                             
 #SBATCH --job-name=testRAND
 #SBATCH -A mkapling_lab        ## account to charge                                                               
-#SBATCH -p free          ## partition/queue name                                                           
-#SBATCH --nodes=4                                                                                                
+#SBATCH -p standard #free          ## partition/queue name                                                           
+#SBATCH --nodes=1                                                                                                
 #SBATCH --ntasks-per-node 40           ## (-n) number of tasks to launch                                    
 #SBATCH --mem-per-cpu=4G                                                                                     
-#SBATCH --time=24:00:00          ## time limit for each array task                                                   
+#SBATCH --time=15:00:00          ## time limit for each array task                                                   
 #SBATCH --mail-type=end               ## send email when the job ends                                     
 #SBATCH --mail-user=ipalubsk@uci.edu  ## use this email address                                              
 #SBATCH --constraint="mlx5_ib"
