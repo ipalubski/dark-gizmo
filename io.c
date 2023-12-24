@@ -4178,7 +4178,10 @@ void write_header_attributes_in_hdf5(hid_t handle)
     hdf5_dataspace = H5Screate(H5S_SCALAR); hdf5_attribute = H5Acreate(handle, "CosmicRayDiffusionCoeff_at_GV_CodeUnits", H5T_NATIVE_DOUBLE, hdf5_dataspace, H5P_DEFAULT);
     H5Awrite(hdf5_attribute, H5T_NATIVE_DOUBLE, &All.CosmicRayDiffusionCoeff); H5Aclose(hdf5_attribute); H5Sclose(hdf5_dataspace);
 #endif
-
+#if defined (GRAVSOFTFACTOR)
+    hdf5_dataspace = H5Screate(H5S_SCALAR); hdf5_attribute = H5Acreate(handle, "GravSoftFactor", H5T_NATIVE_DOUBLE, hdf5_dataspace, H5P_DEFAULT);
+    H5Awrite(hdf5_attribute, H5T_NATIVE_DOUBLE, &All.GravSoftFactor); H5Aclose(hdf5_attribute); H5Sclose(hdf5_dataspace);
+#endif
 #if defined(DM_SIDM)
 #ifdef GRAIN_COLLISIONS
     hdf5_dataspace = H5Screate(H5S_SCALAR); hdf5_attribute = H5Acreate(handle, "Grain_InteractionRenormalization", H5T_NATIVE_DOUBLE, hdf5_dataspace, H5P_DEFAULT);

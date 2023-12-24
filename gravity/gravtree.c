@@ -733,7 +733,7 @@ void set_softenings(void)
         All.SofteningTable[4] = All.SofteningStars;
         All.SofteningTable[5] = All.SofteningBndry;
     }
-    int i; for(i = 0; i < 6; i++) {All.ForceSoftening[i] = 2.8 * All.SofteningTable[i];} 
+    int i; for(i = 0; i < 6; i++) {All.ForceSoftening[i] = 2.8 * All.SofteningTable[i] * All.GravSoftFactor;} 
     /* set the minimum gas kernel length to be used this timestep */
     All.MinHsml = All.MinGasHsmlFractional * All.ForceSoftening[0];
 #ifndef SELFGRAVITY_OFF

@@ -1729,7 +1729,9 @@ extern struct global_data_all_processes
 #ifdef BLACK_HOLES
   int TotBHs;
 #endif
-
+#if defined(GRAVSOFTFACTOR)
+  MyDouble GravSoftFactor;
+#endif
 #if defined(DM_SIDM)
 #ifdef PMAXHIGH
   MyDouble Ptarget;

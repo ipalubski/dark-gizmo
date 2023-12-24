@@ -7,9 +7,9 @@ extern struct SIDM_temp_particle_data{
     MyIDType SItarget;
     double SIprob;
     double R;
-    MyIDType ngblist_sum[100];
-    double ngbprob[100];
-    double ngbr[100];
+    MyIDType ngblist_sum[300];
+    double ngbprob[300];
+    double ngbr[300];
 
 }
 *SIDMtempInfo;

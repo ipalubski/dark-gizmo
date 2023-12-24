@@ -840,16 +840,22 @@ integertime get_timestep(int p,		/*!< particle index */
             double p_target = All.Ptarget; // desired maximum probability per timestep
             double dV[3]; for(k=0;k<3;k++) {dV[k]=P[p].AGS_vsig*All.cf_afac3*All.cf_atime/sqrt(3.);} // convert signal vel to velocity dispersion for estimating rates
 #ifdef DM_SIDM_AREPO // factor of 1.42 ensures dt are the same between the different SIDM methods for a given kappa
-#ifdef DM_SIDM_RES
-	    //double dVmag = (dV[0]+dV[1]+dV[2])/3;
-	    double dVmag = All.DM_InteractionVelocityScale*sqrt(1-All.DM_g/2); // v_rel(max(sigma_v)) 
-	    double r = dVmag*dVmag/(All.DM_InteractionVelocityScale*All.DM_InteractionVelocityScale);
-	    double sigma_v = 1/(pow((1-r),2)+All.DM_g*r);
-	    double p_dt = P[p].rholoc * sigma_v * All.DM_InteractionCrossSection * (dV[0]+dV[1]+dV[2])/3 * dt / 1.42;
-#else	      
 	    double p_dt = P[p].rholoc * All.DM_InteractionCrossSection * (dV[0]+dV[1]+dV[2])/3 * dt / 1.42;
 #endif
+#ifdef DM_SIDM_RES
+	    //double dVmag = (dV[0]+dV[1]+dV[2])/3;
+	    double dVmag = All.DM_InteractionVelocityScale*sqrt(1-All.DM_g/2); // v_rel(max(sigma_v))
+	    double r = dVmag*dVmag/(All.DM_InteractionVelocityScale*All.DM_InteractionVelocityScale);
+	    double sigma_v = 1/(pow((1-r),2)+All.DM_g*r);
+	    p_dt = P[p].rholoc * sigma_v * All.DM_InteractionCrossSection * (dV[0]+dV[1]+dV[2])/3 * dt / 1.42;
 #endif
+#ifdef DM_SIDM_VIS
+	    double dVmag = (dV[0]+dV[1]+dV[2])/3;
+	    double r = dVmag*dVmag/(All.DM_InteractionVelocityScale*All.DM_InteractionVelocityScale);
+	    double sigma_v = 8*pow(r,-3)*((2+r)*log(1+r)-2*r);
+	    p_dt = P[p].rholoc * sigma_v * All.DM_InteractionCrossSection * (dV[0]+dV[1]+dV[2])/3 * dt;
+#endif
+
 #ifdef GRAIN_COLLISIONS
             double p_dt = prob_of_grain_interaction(return_grain_cross_section_per_unit_mass(p),P[p].Mass,0.,PPP[p].AGS_Hsml,dV,dt,p); // probability of interacting with another grain super-particle well within kernel, assuming same mass, H, and V~signalvel, for current timestep dt
 #endif

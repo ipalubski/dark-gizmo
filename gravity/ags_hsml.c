@@ -135,9 +135,9 @@ static struct OUTPUT_STRUCT_NAME
   int ngbcount;
 #if defined(DM_SIDM_AREPO)
   double R;
-  MyIDType ngblistnode[100];
-  double ngbprobnode[100];
-  double ngbrnode[100];
+  MyIDType ngblistnode[300];
+  double ngbprobnode[300];
+  double ngbrnode[300];
 #endif
 #endif
 }
@@ -169,8 +169,8 @@ void ags_out2particle_density(struct OUTPUT_STRUCT_NAME *out, int i, int mode, i
         memset(&SIDMtempInfo[target].ngbr,0.0,sizeof(SIDMtempInfo[target].ngbr));
     }
 
-    if(out->ngbcount > 0 && ((SIDMtempInfo[target].ngbcount + out->ngbcount) < 100)){
-    if(SIDMtempInfo[target].ngbcount + out->ngbcount > 100){printf("NGB # = %i (too many, should crash)\n", out->ngbcount);}
+    if(out->ngbcount > 0 && ((SIDMtempInfo[target].ngbcount + out->ngbcount) < 300)){
+      //if(SIDMtempInfo[target].ngbcount + out->ngbcount > 300){printf("NGB # = %i (too many, should crash)\n", out->ngbcount);}
     if(target > Ndm_active){printf("target > Ndm_active\n");}
     memcpy(SIDMtempInfo[target].ngblist_sum+SIDMtempInfo[target].ngbcount,out->ngblistnode,out->ngbcount*sizeof(MyIDType));
     memcpy(SIDMtempInfo[target].ngbprob+SIDMtempInfo[target].ngbcount,out->ngbprobnode,out->ngbcount*sizeof(double));
@@ -294,7 +294,7 @@ int ags_density_evaluate(int target, int mode, int *exportflag, int *exportnodec
                         out.NV_T[2][2] +=  kernel.wk * kernel.dp[2] * kernel.dp[2];
 #endif
 #if defined(DM_SIDM_AREPO)
-			if(numngb_inbox < 100){
+			if(numngb_inbox < 300){
 			double units = UNIT_SURFDEN_IN_CGS;
 			double dVmag = sqrt(kernel.dv[0]*kernel.dv[0]+kernel.dv[1]*kernel.dv[1]+kernel.dv[2]*kernel.dv[2]) / All.cf_atime;
 			int k;
@@ -305,7 +305,8 @@ int ags_density_evaluate(int target, int mode, int *exportflag, int *exportnodec
 			  //double DMmass = sqrt(8)/(All.DM_InteractionVelocityScale*sqrt(All.DM_a*All.DM_re));
 			  double sigma_v = 1/(pow((1-r),2)+All.DM_g*r);
 			  out.ngbprobnode[n] = All.DM_InteractionCrossSection * kernel.wk * local.Mass * dVmag * sigma_v * local.dtime * units / 2;
-		#elif DM_SIDM_VIS
+                #elifdef DM_SIDM_VIS
+			  //printf("eta = %f\n",All.ErrTolIntAccuracy);
 			  double r = dVmag*dVmag/(All.DM_InteractionVelocityScale*All.DM_InteractionVelocityScale);
 			  double sigma_v = 8*pow(r,-3)*((2+r)*log(1+r)-2*r);
 			  out.ngbprobnode[n] = All.DM_InteractionCrossSection * kernel.wk * local.Mass * dVmag * sigma_v * local.dtime * units / 2;
@@ -651,12 +652,12 @@ void ags_density(void)
                 if(PPP[i].AGS_Hsml >= maxsoft) {PPPZ[i].AGS_zeta = 0;} /* check that we're within the 'valid' range for adaptive softening terms, otherwise zeta=0 */
 
                 double z0 = 0.5 * PPPZ[i].AGS_zeta * PPP[i].AGS_Hsml / (NUMDIMS * P[i].Mass * PPP[i].NumNgb / ( NORM_COEFF * pow(PPP[i].AGS_Hsml,NUMDIMS) )); // zeta before various prefactors
-                double h_eff = 2. * (KERNEL_CORE_SIZE*All.ForceSoftening[P[i].Type]); // force softening defines where Jeans pressure needs to kick in; prefactor = NJeans [=2 here]
+                double h_eff = 2. * (KERNEL_CORE_SIZE*All.ForceSoftening[P[i].Type] / All.GravSoftFactor); // force softening defines where Jeans pressure needs to kick in; prefactor = NJeans [=2 here]
                 double Prho = 0 * h_eff*h_eff/2.; if(P[i].Particle_DivVel>0) {Prho=-Prho;} // truelove criterion. NJeans[above] , gamma=2 for effective EOS when this dominates, rho=ma*na; h_eff here can be Hsml [P/rho~H^-1] or gravsoft_min to really enforce that, as MIN, with P/rho~H^-3; if-check makes it so this term always adds KE to the system, pumping it up
                 PPPZ[i].AGS_zeta = P[i].Mass*P[i].Mass * PPP[i].DhsmlNgbFactor * ( z0 + Prho ); // force correction, including corrections for adaptive softenings and EOS terms
                 PPP[i].NumNgb = pow(PPP[i].NumNgb , 1./NUMDIMS); /* convert NGB to the more useful format, NumNgb^(1/NDIMS), which we can use to obtain the corrected particle sizes */
             } else {
-                PPPZ[i].AGS_zeta = 0; PPP[i].NumNgb = 0; PPP[i].AGS_Hsml = All.ForceSoftening[P[i].Type];
+                PPPZ[i].AGS_zeta = 0; PPP[i].NumNgb = 0; PPP[i].AGS_Hsml = All.ForceSoftening[P[i].Type] / All.GravSoftFactor;
             }
             apply_pm_hires_region_clipping_selection(i);
         }
@@ -686,7 +687,7 @@ int ags_density_isactive(int i)
     default_to_return = 1;
     if(!((1 << P[i].Type) & (ADAPTIVE_GRAVSOFT_FORALL))) /* particle is NOT one of the designated 'adaptive' types */
     {
-        PPP[i].AGS_Hsml = All.ForceSoftening[P[i].Type];
+        PPP[i].AGS_Hsml = All.ForceSoftening[P[i].Type] / All.GravSoftFactor;
         PPPZ[i].AGS_zeta = 0;
         default_to_return = 0;
     } else {default_to_return = 1;} /* particle is AGS-active */
@@ -726,7 +727,7 @@ double ags_return_maxsoft(int i)
 /* routine to return the minimum allowed softening */
 double ags_return_minsoft(int i)
 {
-    double minsoft = All.ForceSoftening[P[i].Type]; // this is the user-specified minimum
+    double minsoft = All.ForceSoftening[P[i].Type] / All.GravSoftFactor; // this is the user-specified minimum
 #if !defined(ADAPTIVE_GRAVSOFT_FORALL)
     minsoft = DMIN(All.MinHsml, minsoft);
 #endif
@@ -1071,10 +1072,10 @@ void AGSForce_calc(void)
 #if defined(DM_SIDM_AREPO)
     int target = P[i].IndexMapToTempsidmStruc;
     bool looking = true; SIDMtempInfo[target].SIprob = 0.0;
-    if(SIDMtempInfo[target].ngbcount < 100){
+    if(SIDMtempInfo[target].ngbcount < 300){
     int j;
-    struct ngb_list_data *ngb_list_data_i = malloc(100*sizeof(struct ngb_list_data));
-    for(j=0;j<99;j++){
+    struct ngb_list_data *ngb_list_data_i = malloc(300*sizeof(struct ngb_list_data));
+    for(j=0;j<299;j++){
     memcpy(&ngb_list_data_i[j].r, &SIDMtempInfo[target].ngbr[j], sizeof(ngb_list_data_i[0].r));
     memcpy(&ngb_list_data_i[j].probs, &SIDMtempInfo[target].ngbprob[j], sizeof(ngb_list_data_i[0].probs));
     memcpy(&ngb_list_data_i[j].IDs, &SIDMtempInfo[target].ngblist_sum[j], sizeof(ngb_list_data_i[0].IDs));
@@ -1092,11 +1093,11 @@ void AGSForce_calc(void)
         return 0;
     }
     int n;
-    qsort(ngb_list_data_i, 100, sizeof(ngb_list_data_i[0]), cmp);
+    qsort(ngb_list_data_i, 300, sizeof(ngb_list_data_i[0]), cmp);
     //qsort(&SIDMtempInfo[target], 350, sizeof(SIDMtempInfo[0]), cmp2);
 
       
-      for(n = 0; n < 99; n++){
+      for(n = 0; n < 299; n++){
         SIDMtempInfo[target].SIprob += ngb_list_data_i[n].probs;//SIDMtempInfo[target].ngbprob[n];
         if(looking == true){
 	  if(SIDMtempInfo[target].R < SIDMtempInfo[target].SIprob*2){

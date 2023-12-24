@@ -1141,6 +1141,11 @@ void read_parameter_file(char *fname)
         addr[nt] = &All.DM_InteractionVelocityScale;
         id[nt++] = REAL;
 #endif
+#ifdef GRAVSOFTFACTOR
+        strcpy(tag[nt], "GravSoftFactor");
+        addr[nt] = &All.GravSoftFactor;
+        id[nt++] = REAL;
+#endif
 #ifdef DM_SIDM_RES
         strcpy(tag[nt], "DM_g");
         addr[nt] = &All.DM_g;
@@ -2221,7 +2226,7 @@ void read_parameter_file(char *fname)
      */
 
     All.CourantFac = 0.4;
-    All.ErrTolIntAccuracy = 0.02;
+    All.ErrTolIntAccuracy = 0.0025;
     All.ErrTolTheta = 0.7;
     All.ErrTolForceAcc = 0.0025;
     All.MaxRMSDisplacementFac = 0.25;
