@@ -3,6 +3,7 @@ This is a patched version of the publicly-available GIZMO (http://www.tapir.calt
 New public compilation-time flags for the SIDM scattering are:
 
 DM_SIDM_AREPO # Use the SPH scattering method used in Arepo
+
 DM_SIDM_GIZMO # Use the original GIZMO scattering method
 
 SIDM_ISOTROPIC # Set scattering to be isotropic
