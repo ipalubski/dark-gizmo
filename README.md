@@ -12,6 +12,7 @@ SIDM_ANISOTROPIC # Set scattering to be anisotropic according to the cross secti
 
 PMAXLOW / PMAXHIGH # Set the SIDM timestep accuracy parameter kappa to 0.002 / 0.02 (Default) This may improve simulation accuracy for large scattering scross sections. 
 
+GRAVSOFTFACTOR # Determines the force softening for gravity to be used for dark matter particles: \eps = GravSoftFactor * Softening_Type1. 
 
 These need to be set in addition to DM_SIDM.
 
